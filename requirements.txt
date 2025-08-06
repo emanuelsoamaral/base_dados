@@ -1,4 +1,2 @@
 openpyxl
-re
-pathlib
-pandas
+
