@@ -22,11 +22,9 @@ st.markdown("<h1 style='text-align: center; font-weight:bold; color: green;'>Cad
 
 col1, col2 = st.columns(2)
 
-col1.markdown.data_emissao = st.text_input('Data:', key='data')
+data_emissao = st.text_input('Data:', key='data')
 
-
-col2.markdown.valor = st.text_input('Valor', key='valor')
-
+valor = st.text_input('Valor', key='valor')
 
 fornecedor = st.text_input('Fornecedor:', key='fornecedor')
 
