@@ -18,8 +18,6 @@ else:
     df_vendas = pd.DataFrame(columns=["id_venda", "data_emissao", "valor", "fornecedor", "descricao", "conta"])
 
 # Inputs do formulário
-st.markdown("<h1 style='text-align: center; font-weight:bold; color: green;'>Cadastro de lançamentos</h1>", unsafe_allow_html=True)
-
 col1, col2 = st.columns(2)
 
 data_emissao = st.text_input('Data:', key='data')
@@ -48,8 +46,8 @@ if st.button('GRAVAR'):
             novo_id = int(df_vendas['id_venda'].max()) + 1 if not df_vendas.empty else 1
             nova_linha = pd.DataFrame([{
                 "id_venda": novo_id,
-                "data_emissao": col1.data_emissao,
-                "valor": col2.valor,
+                "data_emissao": data_emissao,
+                "valor": valor,
                 "fornecedor": fornecedor,
                 "descricao": descricao,
                 "conta": conta  
