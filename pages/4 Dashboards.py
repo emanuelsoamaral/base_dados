@@ -21,12 +21,12 @@ else:
         df['valor_float'] = df['valor'].str.replace(',', '.', regex=False).astype(float)
 
         # Gráfico 1 – Vendas por dia
-        st.subheader("🔹 Total vendido por data")
+        st.subheader("🔹 Total lançado por data")
         vendas_dia = df.groupby("data_emissao")['valor_float'].sum().sort_index()
         st.bar_chart(vendas_dia)
 
         # Gráfico 2 – Vendas por fornecedor
-        st.subheader("🔸 Total vendido por fornecedor")
+        st.subheader("🔸 Total lançado por fornecedor")
         vendas_fornecedor = df.groupby("fornecedor")['valor_float'].sum().sort_values(ascending=False)
         st.bar_chart(vendas_fornecedor)
 
