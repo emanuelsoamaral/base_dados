@@ -20,20 +20,18 @@ else:
 # Inputs do formulário
 st.markdown("<h1 style='text-align: center; font-weight:bold; color: green;'>Cadastro de lançamentos</h1>", unsafe_allow_html=True)
 
-st.markdown("<h3 style='color:#444;'>Data de emissão:</h3>", unsafe_allow_html=True)
-data_emissao = st.text_input('', key='data')
 
-st.markdown("<h3 style='color:#444;'>Valor:</h3>", unsafe_allow_html=True)
-valor = st.text_input('', key='valor')
+data_emissao = st.text_input('Data:', key='data')
 
-st.markdown("<h3 style='color:#444;'>Fornecedor:</h3>", unsafe_allow_html=True)
-fornecedor = st.text_input('', key='fornecedor')
 
-st.markdown("<h3 style='color:#444;'>Descrição:</h3>", unsafe_allow_html=True)
-descricao = st.text_input('', key='descricao')
+valor = st.text_input('Valor', key='valor')
 
-st.markdown("<h3 style='color:#444;'>Conta:</h3>", unsafe_allow_html=True)
-conta = st.text_input('', key='conta')
+
+fornecedor = st.text_input('Fornecedor:', key='fornecedor')
+
+descricao = st.text_input('Descrição:', key='descricao')
+
+conta = st.text_input('Conta:', key='conta')
 
 # Validação com regex
 padrao_data = r'^\d{2}/\d{2}/\d{4}$'      # dd/mm/aaaa
