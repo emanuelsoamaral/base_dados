@@ -20,6 +20,16 @@ else:
         # Converter valor para float
         df['valor_float'] = df['valor'].str.replace(',', '.', regex=False).astype(float)
 
+        if df.empty:
+            st.warning("Nenhuma venda cadastrada ainda.")
+        else:
+            # Converter valores e datas
+            df['valor_float'] = df['valor'].str.replace(',', '.', regex=False).astype(float)
+            df['data_emissao_dt'] = pd.to_datetime(df['data_emissao'], format="%d/%m/%Y", errors='coerce')
+
+        # Remover linhas com datas inválidas
+        df = df.dropna(subset=['data_emissao_dt'])
+
         # Gráfico 1 – Vendas por dia
         st.subheader("🔹 Total lançado por data")
         vendas_dia = df.groupby("data_emissao")['valor_float'].sum().sort_index()
