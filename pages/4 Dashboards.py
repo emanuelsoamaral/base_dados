@@ -4,7 +4,7 @@ from pathlib import Path
 
 st.set_page_config(page_title="Gráficos de Vendas", layout="wide")
 
-st.title("📊 Análise de Vendas")
+st.title("📊 Análise de Lançamentos")
 
 # Caminho e leitura
 arquivo_excel = Path("datasets/vendas_certo.xlsx")
@@ -32,5 +32,5 @@ else:
 
         # Destaques
         st.markdown("---")
-        st.success(f"📅 Dia com maior venda: **{vendas_dia.idxmax()}** — R$ {vendas_dia.max():,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+        st.success(f"📅 Dia com maior lançamentos: **{vendas_dia.idxmax()}** — R$ {vendas_dia.max():,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
         st.success(f"🏢 Fornecedor com maior total: **{vendas_fornecedor.idxmax()}** — R$ {vendas_fornecedor.max():,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
