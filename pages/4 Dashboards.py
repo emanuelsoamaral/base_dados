@@ -3,57 +3,66 @@ import pandas as pd
 import plotly.express as px
 from pathlib import Path
 
-st.set_page_config(page_title="Gráficos de Vendas", layout="wide")
+st.set_page_config(page_title="Dashboards", layout="wide")
 
-st.title("📊 Análise de Lançamentos")
+st.title("📊 Dashboards - Dados Lançados")
 
-# Caminho e leitura
-arquivo_excel = Path("datasets/vendas_certo.xlsx")
+# Caminho da planilha
+pasta_datasets = Path("datasets")
+arquivo_excel = pasta_datasets / "vendas_certo.xlsx"
 
+# Verifica se arquivo existe
 if not arquivo_excel.exists():
-    st.warning("Nenhuma venda cadastrada ainda.")
-else:
-    df = pd.read_excel(arquivo_excel, engine='openpyxl')
+    st.warning("Nenhum dado lançado encontrado.")
+    st.stop()
 
-    if df.empty:
-        st.warning("Nenhuma venda cadastrada ainda.")
-    else:
-        # Converter valor para float
-        df['valor_float'] = df['valor'].str.replace(',', '.', regex=False).astype(float)
-        df['data_emissao_dt'] = pd.to_datetime(df['data_emissao'], format="%d/%m/%Y", errors='coerce')
+# Carrega planilha
+df = pd.read_excel(arquivo_excel)
 
-        # Remover linhas com datas inválidas
-        df = df.dropna(subset=['data_emissao_dt'])
+# Converte para datetime
+df["Data emetida"] = pd.to_datetime(df["Data emetida"], dayfirst=True, errors="coerce")
 
-        # Agrupamento por data
-        vendas_dia = df.groupby("data_emissao")['valor_float'].sum().sort_index()
-        vendas_dia_df = vendas_dia.reset_index()
+# Remove linhas sem data
+df = df.dropna(subset=["Data emetida"])
 
-        # Agrupamento por fornecedor
-        vendas_fornecedor = df.groupby("fornecedor")['valor_float'].sum().sort_values(ascending=False)
-        vendas_fornecedor_df = vendas_fornecedor.reset_index()
+# Ordena por data crescente
+df = df.sort_values(by="Data emetida")
 
-        # --- Gráfico 1 – Vendas por dia ---
-        st.subheader("Total lançado por data")
-        fig_bar_dia = px.bar(vendas_dia_df, x="Data emetida", y="Valor em reais:", text="Valor:")
-        fig_bar_dia.update_traces(texttemplate='%{text:.2f}', textposition='outside')
-        fig_bar_dia.update_xaxes(tickangle=0)  # Mantém horizontal
-        st.plotly_chart(fig_bar_dia, use_container_width=True)
+# Agrupa por data
+vendas_dia_df = df.groupby("Data emetida", as_index=False)["Valor em reais:"].sum()
 
-        # --- Gráfico 2 – Vendas por fornecedor ---
-        st.subheader("Total lançado por fornecedor")
-        fig_bar_fornecedor = px.bar(vendas_fornecedor_df, x="Fornecedor", y="Valor em reais:", text="Valor:")
-        fig_bar_fornecedor.update_traces(texttemplate='%{text:.2f}', textposition='outside')
-        fig_bar_fornecedor.update_xaxes(tickangle=0)  # Horizontal
-        st.plotly_chart(fig_bar_fornecedor, use_container_width=True)
+# ----------- Gráfico de Barras (datas na horizontal) -----------
+fig_bar_dia = px.bar(
+    vendas_dia_df,
+    x="Data emetida",
+    y="Valor em reais:",
+    text="Valor em reais:",
+    title="📅 Valores por Data",
+)
+fig_bar_dia.update_traces(texttemplate='%{text:.2f}', textposition="outside")
+fig_bar_dia.update_layout(
+    xaxis_title="Data",
+    yaxis_title="Valor (R$)",
+    xaxis_tickformat="%d/%m/%Y",
+)
 
-        # --- Gráfico 3 – Pizza: proporção de vendas por data ---
-        st.subheader("Proporção de Vendas por Data")
-        fig_pizza = px.pie(vendas_dia_df, names="data_emissao", values="valor_float", title="Proporção de Vendas por Data")
-        fig_pizza.update_traces(textposition='inside', textinfo='percent+label')
-        st.plotly_chart(fig_pizza, use_container_width=True)
+# ----------- Gráfico de Pizza (proporção de vendas por data) -----------
+fig_pizza = px.pie(
+    vendas_dia_df,
+    names="Data emetida",
+    values="Valor em reais:",
+    title="🍕 Proporção de Vendas por Data",
+    hole=0.3
+)
+fig_pizza.update_traces(textinfo="percent+label")
 
-        # Destaques
-        st.markdown("---")
-        st.success(f"📅 Dia com maior lançamentos: **{vendas_dia.idxmax()}** — R$ {vendas_dia.max():,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
-        st.success(f"🏢 Fornecedor com maior total: **{vendas_fornecedor.idxmax()}** — R$ {vendas_fornecedor.max():,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+# Exibe gráficos
+col1, col2 = st.columns(2)
+with col1:
+    st.plotly_chart(fig_bar_dia, use_container_width=True)
+with col2:
+    st.plotly_chart(fig_pizza, use_container_width=True)
+
+# ----------- Exibe tabela final -----------
+st.subheader("📄 Dados Lançados")
+st.dataframe(df, use_container_width=True)
