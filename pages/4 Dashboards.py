@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import plotly.express as px
 from pathlib import Path
 
 st.set_page_config(page_title="Gráficos de Vendas", layout="wide")
@@ -19,26 +20,38 @@ else:
     else:
         # Converter valor para float
         df['valor_float'] = df['valor'].str.replace(',', '.', regex=False).astype(float)
-
-        if df.empty:
-            st.warning("Nenhuma venda cadastrada ainda.")
-        else:
-            # Converter valores e datas
-            df['valor_float'] = df['valor'].str.replace(',', '.', regex=False).astype(float)
-            df['data_emissao_dt'] = pd.to_datetime(df['data_emissao'], format="%d/%m/%Y", errors='coerce')
+        df['data_emissao_dt'] = pd.to_datetime(df['data_emissao'], format="%d/%m/%Y", errors='coerce')
 
         # Remover linhas com datas inválidas
         df = df.dropna(subset=['data_emissao_dt'])
 
-        # Gráfico 1 – Vendas por dia
-        st.subheader("🔹 Total lançado por data")
+        # Agrupamento por data
         vendas_dia = df.groupby("data_emissao")['valor_float'].sum().sort_index()
-        st.bar_chart(vendas_dia)
+        vendas_dia_df = vendas_dia.reset_index()
 
-        # Gráfico 2 – Vendas por fornecedor
-        st.subheader("🔸 Total lançado por fornecedor")
+        # Agrupamento por fornecedor
         vendas_fornecedor = df.groupby("fornecedor")['valor_float'].sum().sort_values(ascending=False)
-        st.bar_chart(vendas_fornecedor)
+        vendas_fornecedor_df = vendas_fornecedor.reset_index()
+
+        # --- Gráfico 1 – Vendas por dia ---
+        st.subheader("🔹 Total lançado por data")
+        fig_bar_dia = px.bar(vendas_dia_df, x="data_emissao", y="valor_float", text="valor_float")
+        fig_bar_dia.update_traces(texttemplate='%{text:.2f}', textposition='outside')
+        fig_bar_dia.update_xaxes(tickangle=0)  # Mantém horizontal
+        st.plotly_chart(fig_bar_dia, use_container_width=True)
+
+        # --- Gráfico 2 – Vendas por fornecedor ---
+        st.subheader("🔸 Total lançado por fornecedor")
+        fig_bar_fornecedor = px.bar(vendas_fornecedor_df, x="fornecedor", y="valor_float", text="valor_float")
+        fig_bar_fornecedor.update_traces(texttemplate='%{text:.2f}', textposition='outside')
+        fig_bar_fornecedor.update_xaxes(tickangle=0)  # Horizontal
+        st.plotly_chart(fig_bar_fornecedor, use_container_width=True)
+
+        # --- Gráfico 3 – Pizza: proporção de vendas por data ---
+        st.subheader("🥧 Proporção de Vendas por Data")
+        fig_pizza = px.pie(vendas_dia_df, names="data_emissao", values="valor_float", title="Proporção de Vendas por Data")
+        fig_pizza.update_traces(textposition='inside', textinfo='percent+label')
+        st.plotly_chart(fig_pizza, use_container_width=True)
 
         # Destaques
         st.markdown("---")
