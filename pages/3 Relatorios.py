@@ -13,10 +13,13 @@ arquivo_excel = pasta_datasets / 'vendas_certo.xlsx'
 
 # --- Funções Auxiliares ---
 def converter_data(data_str):
-    """Converte string 'dd/mm/aaaa' para objeto datetime."""
+    """Converte string 'dd/mm/aaaa' para objeto datetime, removendo espaços."""
     try:
-        return datetime.datetime.strptime(data_str, '%d/%m/%Y').date()
-    except (ValueError, TypeError):
+        # A linha abaixo foi alterada para remover espaços em branco
+        data_limpa = data_str.strip()
+        return datetime.datetime.strptime(data_limpa, '%d/%m/%Y').date()
+    except (ValueError, TypeError) as e:
+        # Se der erro, retorna None
         return None
 
 @st.cache_data
@@ -24,10 +27,12 @@ def load_data():
     """Carrega o DataFrame do arquivo Excel e converte a coluna de data."""
     if arquivo_excel.exists():
         df = pd.read_excel(arquivo_excel, engine='openpyxl')
-        # Limpa dados com formato de data inválido
+        # Garante que a coluna é string antes de processar
         df['data_emissao'] = df['data_emissao'].astype(str)
         df['data_objeto'] = df['data_emissao'].apply(converter_data)
+        # Remove linhas com datas inválidas
         df.dropna(subset=['data_objeto'], inplace=True)
+        # Ordena os dados pela data
         df.sort_values(by='data_objeto', inplace=True)
         return df
     else:
@@ -43,7 +48,6 @@ if df_vendas.empty:
 
 # --- Sidebar ---
 st.sidebar.header("Filtros do Relatório")
-# Pega as datas únicas no formato 'dd/mm/aaaa' para o selectbox
 datas_unicas = sorted(df_vendas['data_emissao'].unique())
 data_selecionada = st.sidebar.selectbox("Selecione uma data:", options=datas_unicas)
 
@@ -54,11 +58,12 @@ st.write("---")
 df_filtrado = df_vendas[df_vendas['data_emissao'] == data_selecionada]
 
 if not df_filtrado.empty:
+    # Exibe o sumário
     total_valor = df_filtrado['valor'].str.replace(',', '.').astype(float).sum()
     st.markdown(f"**Total de Lançamentos:** {len(df_filtrado)}  |  **Valor Total:** R$ {total_valor:,.2f}")
     st.write("---")
 
-    # Exibir cada lançamento por extenso
+    # Exibe cada lançamento por extenso
     for _, row in df_filtrado.iterrows():
         valor_formatado = f"R$ {float(row['valor'].replace(',', '.')):,.2f}"
         st.markdown(
