@@ -16,28 +16,25 @@ if arquivo_excel.exists():
     df_vendas = pd.read_excel(arquivo_excel, engine='openpyxl')
 else:
     df_vendas = pd.DataFrame(columns=["id_venda", "data_emissao", "valor", "fornecedor", "descricao", "conta"])
+    df_vendas.to_excel(arquivo_excel, index=False, engine='openpyxl')  # cria o arquivo vazio
 
 # Inputs do formulário
-col1, col2 = st.columns(2)
-
-col1 = st.text_input('Data:', key='data')
-
-col2 = st.text_input('Valor', key='valor')
+col_a, col_b = st.columns(2)
+data_input = col_a.text_input('Data (dd/mm/aaaa):', key='data')
+valor_input = col_b.text_input('Valor (ex: 9999,99)', key='valor')
 
 fornecedor = st.text_input('Fornecedor:', key='fornecedor')
-
 descricao = st.text_input('Descrição:', key='descricao')
-
 conta = st.text_input('Conta:', key='conta')
 
 # Validação com regex
 padrao_data = r'^\d{2}/\d{2}/\d{4}$'      # dd/mm/aaaa
-padrao_valor = r'^\d{1,20},\d{2}$'         # até 6 dígitos antes da vírgula, 2 após
+padrao_valor = r'^\d{1,20},\d{2}$'         # até 20 dígitos antes da vírgula, 2 após
 
-if st.button('GRAVAR'):
-    if not re.match(padrao_data, col1):
+if st.button('💾 GRAVAR'):
+    if not re.match(padrao_data, data_input):
         st.error('Data inválida. Use o formato dd/mm/aaaa.')
-    elif not re.match(padrao_valor, col2):
+    elif not re.match(padrao_valor, valor_input):
         st.error('Valor inválido. Use o formato 9999,99.')
     elif not fornecedor or not descricao or not conta:
         st.error('Preencha todos os campos obrigatórios.')
@@ -46,15 +43,18 @@ if st.button('GRAVAR'):
             novo_id = int(df_vendas['id_venda'].max()) + 1 if not df_vendas.empty else 1
             nova_linha = pd.DataFrame([{
                 "id_venda": novo_id,
-                "data_emissao": col1,
-                "valor": col2,
+                "data_emissao": data_input,
+                "valor": valor_input,
                 "fornecedor": fornecedor,
                 "descricao": descricao,
-                "conta": conta  
+                "conta": conta
             }])
             df_vendas = pd.concat([df_vendas, nova_linha], ignore_index=True)
-            df_vendas.to_excel(arquivo_excel, index=False, engine='openpyxl')
-            st.success('Dado adicionado com sucesso')
+            df_vendas.to_excel(arquivo_excel, index=False, engine='openpyxl')  # Salva no Excel
+            st.success('✅ Dado adicionado com sucesso e salvo no arquivo!')
         except Exception as e:
             st.error(f"Erro ao adicionar os dados: {e}")
 
+# Mostrar tabela atual
+st.markdown("### 📄 Registros atuais")
+st.dataframe(df_vendas)
