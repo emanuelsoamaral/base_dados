@@ -22,7 +22,7 @@ df = pd.read_excel(arquivo_excel)
 df.columns = df.columns.str.strip().str.lower()
 
 # Verificar se colunas necessárias existem
-colunas_necessarias = ["data emissão", "valor em reais:"]
+colunas_necessarias = ["data emissao", "valor"]
 for col in colunas_necessarias:
     if col not in df.columns:
         st.error(f"A coluna '{col}' não foi encontrada no arquivo. Colunas disponíveis: {list(df.columns)}")
