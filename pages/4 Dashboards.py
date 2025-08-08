@@ -25,7 +25,7 @@ else:
         else:
             # Converter valores e datas
             df['valor_float'] = df['valor'].str.replace(',', '.', regex=False).astype(float)
-            df['data_emissao_dt'] = pd.to_datetime(df['data_emissao'], format="%m/%d/%Y", errors='coerce')
+            df['data_emissao_dt'] = pd.to_datetime(df['data_emissao'], format="%d/%m/%Y", errors='coerce')
 
         # Remover linhas com datas inválidas
         df = df.dropna(subset=['data_emissao_dt'])
