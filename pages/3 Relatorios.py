@@ -26,11 +26,9 @@ def load_data():
     if arquivo_excel.exists():
         df = pd.read_excel(arquivo_excel, engine='openpyxl')
         
-        # Garante que as colunas 'data_emissao' e 'valor' são do tipo string
         df['data_emissao'] = df['data_emissao'].astype(str)
         df['valor'] = df['valor'].astype(str)
 
-        # Processa a coluna de data para ordenação
         df['data_objeto'] = df['data_emissao'].apply(converter_data)
         df.dropna(subset=['data_objeto'], inplace=True)
         df.sort_values(by='data_objeto', inplace=True)
@@ -58,16 +56,22 @@ st.write("---")
 df_filtrado = df_vendas[df_vendas['data_emissao'] == data_selecionada]
 
 if not df_filtrado.empty:
-    # A linha abaixo foi ajustada para converter a coluna 'valor' para string antes de usar o .str
     total_valor = df_filtrado['valor'].astype(str).str.replace(',', '.').astype(float).sum()
-    
     st.markdown(f"**Total de Lançamentos:** {len(df_filtrado)}  |  **Valor Total:** R$ {total_valor:,.2f}")
     st.write("---")
 
-    # Exibe cada lançamento por extenso
+    # String para armazenar o texto do relatório
+    relatorio_texto = ""
+    relatorio_texto += f"Relatório de Vendas do Dia {data_selecionada}\n"
+    relatorio_texto += "========================================\n\n"
+    relatorio_texto += f"Total de Lançamentos: {len(df_filtrado)}\n"
+    relatorio_texto += f"Valor Total: R$ {total_valor:,.2f}\n\n"
+    relatorio_texto += "----------------------------------------\n\n"
+
     for _, row in df_filtrado.iterrows():
-        # Converte o valor para float aqui também, caso não esteja
         valor_formatado = f"R$ {float(str(row['valor']).replace(',', '.')):,.2f}"
+        
+        # Exibe o texto na tela
         st.markdown(
             f"""
             - **ID:** {int(row['id_venda'])}
@@ -80,14 +84,23 @@ if not df_filtrado.empty:
         )
         st.markdown("---")
 
+        # Adiciona o texto ao relatório para download
+        relatorio_texto += f"ID: {int(row['id_venda'])}\n"
+        relatorio_texto += f"Data: {row['data_emissao']}\n"
+        relatorio_texto += f"Fornecedor: {row['fornecedor']}\n"
+        relatorio_texto += f"Descrição: {row['descricao']}\n"
+        relatorio_texto += f"Conta: {row['conta']}\n"
+        relatorio_texto += f"Valor: {valor_formatado}\n"
+        relatorio_texto += "----------------------------------------\n\n"
+
     # --- Opção de Impressão (Download) ---
-    def get_table_download_link(df):
-        """Cria um link para download de um CSV."""
-        csv = df.to_csv(index=False)
-        b64 = base64.b64encode(csv.encode()).decode()
-        href = f'<a href="data:file/csv;base64,{b64}" download="relatorio_vendas_{data_selecionada.replace("/", "-")}.csv">📥 Baixar Relatório em CSV</a>'
+    def get_text_download_link(text_content, filename):
+        """Cria um link para download de um arquivo de texto."""
+        b64 = base64.b64encode(text_content.encode()).decode()
+        href = f'<a href="data:text/plain;base64,{b64}" download="{filename}">📥 Baixar Relatório (texto para impressão)</a>'
         return href
 
-    st.markdown(get_table_download_link(df_filtrado), unsafe_allow_html=True)
+    st.markdown(get_text_download_link(relatorio_texto, f"relatorio_vendas_{data_selecionada.replace('/', '-')}.txt"), unsafe_allow_html=True)
+
 else:
-    st.warning(f"Nenhum lançamento encontrado para a data **{data_selecionada}**.")
+    st.warning(f"Nenhum lançamento encontrado para a data **{data_selecionada}**.")v
