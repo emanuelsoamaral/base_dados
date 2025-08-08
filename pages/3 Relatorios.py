@@ -103,4 +103,4 @@ if not df_filtrado.empty:
     st.markdown(get_text_download_link(relatorio_texto, f"relatorio_vendas_{data_selecionada.replace('/', '-')}.txt"), unsafe_allow_html=True)
 
 else:
-    st.warning(f"Nenhum lançamento encontrado para a data **{data_selecionada}**.")v
+    st.warning(f"Nenhum lançamento encontrado para a data **{data_selecionada}**.")
