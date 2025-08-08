@@ -3,66 +3,66 @@ import pandas as pd
 import plotly.express as px
 from pathlib import Path
 
-st.set_page_config(page_title="Dashboards", layout="wide")
+st.set_page_config(page_title="Dashboards", page_icon="📊", layout="wide")
 
 st.title("📊 Dashboards - Dados Lançados")
 
-# Caminho da planilha
+# Caminho do arquivo
 pasta_datasets = Path("datasets")
 arquivo_excel = pasta_datasets / "vendas_certo.xlsx"
 
-# Verifica se arquivo existe
+# Carregar os dados
 if not arquivo_excel.exists():
-    st.warning("Nenhum dado lançado encontrado.")
+    st.error("Arquivo de dados não encontrado. Certifique-se de que o arquivo 'vendas_certo.xlsx' está na pasta datasets.")
     st.stop()
 
-# Carrega planilha
 df = pd.read_excel(arquivo_excel)
 
-# Converte para datetime
-df["Data emetida"] = pd.to_datetime(df["data_emissao"], dayfirst=True, errors="coerce")
+# Padronizar nomes das colunas
+df.columns = df.columns.str.strip().str.lower()
 
-# Remove linhas sem data
-df = df.dropna(subset=["Data emetida"])
+# Verificar se colunas necessárias existem
+colunas_necessarias = ["data emissão", "valor em reais:"]
+for col in colunas_necessarias:
+    if col not in df.columns:
+        st.error(f"A coluna '{col}' não foi encontrada no arquivo. Colunas disponíveis: {list(df.columns)}")
+        st.stop()
 
-# Ordena por data crescente
-df = df.sort_values(by="Data emetida")
+# Converter data e valores
+df["data_emissao"] = pd.to_datetime(df["data emissão"], errors="coerce")
+df["valor_float"] = pd.to_numeric(df["valor em reais:"], errors="coerce")
 
-# Agrupa por data
+# Remover linhas inválidas
+df = df.dropna(subset=["data_emissao", "valor_float"])
+
+# Agrupar por dia
 vendas_dia_df = df.groupby("data_emissao", as_index=False)["valor_float"].sum()
 
-# ----------- Gráfico de Barras (datas na horizontal) -----------
+# Ordenar por data crescente
+vendas_dia_df = vendas_dia_df.sort_values("data_emissao")
+
+# Gráfico 1 - Barra por dia
 fig_bar_dia = px.bar(
     vendas_dia_df,
-    x="Data emetida",
-    y="Valor em reais:",
-    text="Valor em reais:",
-    title="📅 Valores por Data",
+    x="data_emissao",
+    y="valor_float",
+    text="valor_float",
+    title="Dados Lançados por Dia",
 )
 fig_bar_dia.update_traces(texttemplate='%{text:.2f}', textposition="outside")
-fig_bar_dia.update_layout(
-    xaxis_title="Data",
-    yaxis_title="Valor (R$)",
-    xaxis_tickformat="%d/%m/%Y",
-)
+fig_bar_dia.update_layout(xaxis_title="Data", yaxis_title="Valor (R$)")
 
-# ----------- Gráfico de Pizza (proporção de vendas por data) -----------
-fig_pizza = px.pie(
+# Gráfico 2 - Linha por dia
+fig_linha_dia = px.line(
     vendas_dia_df,
-    names="Data emetida",
-    values="Valor em reais:",
-    title="🍕 Proporção de Vendas por Data",
-    hole=0.3
+    x="data_emissao",
+    y="valor_float",
+    markers=True,
+    title="Evolução dos Dados Lançados por Dia"
 )
-fig_pizza.update_traces(textinfo="percent+label")
+fig_linha_dia.update_layout(xaxis_title="Data", yaxis_title="Valor (R$)")
 
-# Exibe gráficos
+# Exibir gráficos lado a lado
 col1, col2 = st.columns(2)
-with col1:
-    st.plotly_chart(fig_bar_dia, use_container_width=True)
-with col2:
-    st.plotly_chart(fig_pizza, use_container_width=True)
-
-# ----------- Exibe tabela final -----------
-st.subheader("📄 Dados Lançados")
-st.dataframe(df, use_container_width=True)
+col1.plotly_chart(fig_bar_dia, use_container_width=True)
+col2.plotly_chart(fig_linha_dia, use_container_width=True)
