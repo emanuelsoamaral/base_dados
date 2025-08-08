@@ -29,7 +29,7 @@ for col in colunas_necessarias:
         st.stop()
 
 # Converter data e valores
-df["data_emissao"] = pd.to_datetime(df["data emissão"], errors="coerce")
+df["data_emissao"] = pd.to_datetime(df["data emissao"], errors="coerce")
 df["valor_float"] = pd.to_numeric(df["valor em reais:"], errors="coerce")
 
 # Remover linhas inválidas
