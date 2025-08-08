@@ -22,15 +22,15 @@ df = pd.read_excel(arquivo_excel)
 df.columns = df.columns.str.strip().str.lower()
 
 # Verificar se colunas necessárias existem
-colunas_necessarias = ["data emissao", "valor"]
+colunas_necessarias = ["data_emissao", "valor"]
 for col in colunas_necessarias:
     if col not in df.columns:
         st.error(f"A coluna '{col}' não foi encontrada no arquivo. Colunas disponíveis: {list(df.columns)}")
         st.stop()
 
 # Converter data e valores
-df["data_emissao"] = pd.to_datetime(df["data emissao"], errors="coerce")
-df["valor_float"] = pd.to_numeric(df["valor em reais:"], errors="coerce")
+df["data_emissao"] = pd.to_datetime(df["data_emissao"], errors="coerce")
+df["valor_float"] = pd.to_numeric(df["valor"], errors="coerce")
 
 # Remover linhas inválidas
 df = df.dropna(subset=["data_emissao", "valor_float"])
