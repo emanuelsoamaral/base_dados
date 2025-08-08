@@ -15,24 +15,24 @@ arquivo_excel = pasta_datasets / 'vendas_certo.xlsx'
 def converter_data(data_str):
     """Converte string 'dd/mm/aaaa' para objeto datetime, removendo espaços."""
     try:
-        # A linha abaixo foi alterada para remover espaços em branco
         data_limpa = data_str.strip()
         return datetime.datetime.strptime(data_limpa, '%d/%m/%Y').date()
-    except (ValueError, TypeError) as e:
-        # Se der erro, retorna None
+    except (ValueError, TypeError):
         return None
 
 @st.cache_data
 def load_data():
-    """Carrega o DataFrame do arquivo Excel e converte a coluna de data."""
+    """Carrega o DataFrame do arquivo Excel e converte as colunas."""
     if arquivo_excel.exists():
         df = pd.read_excel(arquivo_excel, engine='openpyxl')
-        # Garante que a coluna é string antes de processar
+        
+        # Garante que as colunas 'data_emissao' e 'valor' são do tipo string
         df['data_emissao'] = df['data_emissao'].astype(str)
+        df['valor'] = df['valor'].astype(str)
+
+        # Processa a coluna de data para ordenação
         df['data_objeto'] = df['data_emissao'].apply(converter_data)
-        # Remove linhas com datas inválidas
         df.dropna(subset=['data_objeto'], inplace=True)
-        # Ordena os dados pela data
         df.sort_values(by='data_objeto', inplace=True)
         return df
     else:
@@ -58,14 +58,16 @@ st.write("---")
 df_filtrado = df_vendas[df_vendas['data_emissao'] == data_selecionada]
 
 if not df_filtrado.empty:
-    # Exibe o sumário
-    total_valor = df_filtrado['valor'].str.replace(',', '.').astype(float).sum()
+    # A linha abaixo foi ajustada para converter a coluna 'valor' para string antes de usar o .str
+    total_valor = df_filtrado['valor'].astype(str).str.replace(',', '.').astype(float).sum()
+    
     st.markdown(f"**Total de Lançamentos:** {len(df_filtrado)}  |  **Valor Total:** R$ {total_valor:,.2f}")
     st.write("---")
 
     # Exibe cada lançamento por extenso
     for _, row in df_filtrado.iterrows():
-        valor_formatado = f"R$ {float(row['valor'].replace(',', '.')):,.2f}"
+        # Converte o valor para float aqui também, caso não esteja
+        valor_formatado = f"R$ {float(str(row['valor']).replace(',', '.')):,.2f}"
         st.markdown(
             f"""
             - **ID:** {int(row['id_venda'])}
