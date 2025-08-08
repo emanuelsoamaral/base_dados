@@ -29,7 +29,7 @@ df = df.dropna(subset=["Data emetida"])
 df = df.sort_values(by="Data emetida")
 
 # Agrupa por data
-vendas_dia_df = df.groupby("Data emetida", as_index=False)["Valor em reais:"].sum()
+vendas_dia_df = df.groupby("data_emissao", as_index=False)["valor_float"].sum()
 
 # ----------- Gráfico de Barras (datas na horizontal) -----------
 fig_bar_dia = px.bar(
