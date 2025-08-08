@@ -55,6 +55,4 @@ if st.button('💾 GRAVAR'):
         except Exception as e:
             st.error(f"Erro ao adicionar os dados: {e}")
 
-# Mostrar tabela atual
-st.markdown("### 📄 Registros atuais")
-st.dataframe(df_vendas)
+
