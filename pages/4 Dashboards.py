@@ -20,7 +20,7 @@ if not arquivo_excel.exists():
 df = pd.read_excel(arquivo_excel)
 
 # Converte para datetime
-df["Data emetida"] = pd.to_datetime(df["Data emetida"], dayfirst=True, errors="coerce")
+df["Data emetida"] = pd.to_datetime(df["data_emissao"], dayfirst=True, errors="coerce")
 
 # Remove linhas sem data
 df = df.dropna(subset=["Data emetida"])
